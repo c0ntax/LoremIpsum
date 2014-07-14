@@ -11,6 +11,8 @@
 
 namespace Badcow\LoremIpsum;
 
+use Badcow\LoremIpsum\Languages\LanguageInterface;
+
 class Generator
 {
     /**
@@ -77,32 +79,28 @@ class Generator
         'elementum',    'tempor',       'risus',        'cras'
     );
 
-    /**
-     * @param $words
-     * @return Generator
-     */
-    public function setWords(array $words)
-    {
-        $this->words = $words;
+    /** @var LanguageInterface */
+    private $language;
 
-        return $this;
+    public function __construct(LanguageInterface $language)
+    {
+        $this->setLanguage($language);
     }
 
     /**
-     * Add a single or multiple words to the
-     * generator
-     *
-     * @param string|array $words
+     * @param \Badcow\LoremIpsum\Languages\LanguageInterface $language
      */
-    public function addWords($words)
+    public function setLanguage(LanguageInterface $language)
     {
-        if (is_array($words)) {
-            $this->words = array_merge($this->words, $words);
+        $this->language = $language;
+    }
 
-            return;
-        }
-
-        $this->words[] = $words;
+    /**
+     * @return \Badcow\LoremIpsum\Languages\LanguageInterface
+     */
+    public function getLanguage()
+    {
+        return $this->language;
     }
 
     /**
@@ -110,15 +108,7 @@ class Generator
      */
     public function getWords()
     {
-        return $this->words;
-    }
-
-    /**
-     * @param float $paragraphMean
-     */
-    public function setParagraphMean($paragraphMean)
-    {
-        $this->paragraphMean = $paragraphMean;
+        return $this->getLanguage()->getWords();
     }
 
     /**
@@ -126,15 +116,7 @@ class Generator
      */
     public function getParagraphMean()
     {
-        return $this->paragraphMean;
-    }
-
-    /**
-     * @param float $paragraphStDev
-     */
-    public function setParagraphStDev($paragraphStDev)
-    {
-        $this->paragraphStDev = $paragraphStDev;
+        return $this->getLanguage()->getParagraphMean();
     }
 
     /**
@@ -142,15 +124,7 @@ class Generator
      */
     public function getParagraphStDev()
     {
-        return $this->paragraphStDev;
-    }
-
-    /**
-     * @param float $sentenceMean
-     */
-    public function setSentenceMean($sentenceMean)
-    {
-        $this->sentenceMean = $sentenceMean;
+        return $this->getLanguage()->getParagraphStDev();
     }
 
     /**
@@ -158,15 +132,7 @@ class Generator
      */
     public function getSentenceMean()
     {
-        return $this->sentenceMean;
-    }
-
-    /**
-     * @param float $sentenceStDev
-     */
-    public function setSentenceStDev($sentenceStDev)
-    {
-        $this->sentenceStDev = $sentenceStDev;
+        return $this->getLanguage()->getSentenceMean();
     }
 
     /**
@@ -174,7 +140,7 @@ class Generator
      */
     public function getSentenceStDev()
     {
-        return $this->sentenceStDev;
+        return $this->getLanguage()->getSentenceStDev();
     }
 
     /**
@@ -188,7 +154,7 @@ class Generator
         $words = array();
 
         for ($i = 0; $i < $count; $i++) {
-            $word = $this->words[array_rand($this->words)];
+            $word = $this->getWords()[array_rand($this->getWords())];
             if ($i > 0 && $words[$i - 1] === $word) {
                 $i--;
                 continue;
@@ -211,7 +177,7 @@ class Generator
         $sentences = array();
 
         for ($i = 0; $i < $count; $i++) {
-            $wordCount = Statistics::gauss_ms($this->sentenceMean, $this->sentenceStDev);
+            $wordCount = Statistics::gauss_ms($this->getSentenceMean(), $this->getSentenceStDev());
             $sentence = $this->getRandomWords($wordCount);
             $sentences[] = $this->toSentence($sentence);
         }
@@ -230,7 +196,7 @@ class Generator
         $paragraphs = array();
 
         for ($i = 0; $i < $count; $i++) {
-            $number = Statistics::gauss_ms($this->paragraphMean, $this->paragraphStDev);
+            $number = Statistics::gauss_ms($this->getParagraphMean(), $this->getParagraphStDev());
             $sentences = $this->getSentences($number);
             $paragraphs[] = implode(' ', $sentences);
         }
